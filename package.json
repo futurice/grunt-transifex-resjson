@@ -1,0 +1,44 @@
+{
+  "name": "grunt-transifex-resjson",
+  "description": "Grunt tasks for managing RESJSON resource files in Transifex",
+  "version": "0.1.0",
+  "homepage": "-",
+  "author": {
+    "name": "Teemu Sidoroff",
+    "email": "teemu.sidoroff@futurice.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/futurice/grunt-transifex-resjson"
+  },
+  "bugs": {
+    "url": "https://github.com/futurice/grunt-transifex-resjson/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "-/blob/master/LICENSE-MIT"
+    }
+  ],
+  "engines": {
+    "node": "~0.10.12"
+  },
+  "dependencies": {
+    "relaxed-json": "~0.2.3",
+    "request": "~2.27.0",
+    "underscore": "~1.6.0",
+    "q": "~0.9.6"
+  },
+  "devDependencies": {
+    "grunt-contrib-jshint": "~0.6.0",
+    "grunt-contrib-clean": "~0.4.0",
+    "grunt": "~0.4.3"
+  },
+  "peerDependencies": {
+    "grunt": "~0.4.3"
+  },
+  "keywords": [
+    "gruntplugin",
+    "transifex"
+  ]
+}
