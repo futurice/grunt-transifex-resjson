@@ -202,7 +202,7 @@ grunt tx-pull-translations
 or to download specific translations:
 
 ```js
-grunt tx-pull-translations:fi-FI, es-ES
+grunt tx-pull-translations:fi-FI,es-ES
 ```
 
 
@@ -225,7 +225,7 @@ grunt tx-push-translations
 or to upload specific translations:
 
 ```js
-grunt tx-push-translations:fi-FI, es-ES
+grunt tx-push-translations:fi-FI,es-ES
 ```
 
 
