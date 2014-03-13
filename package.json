@@ -2,7 +2,7 @@
   "name": "grunt-transifex-resjson",
   "description": "Grunt tasks for managing RESJSON resource files in Transifex",
   "version": "0.1.0",
-  "homepage": "-",
+  "homepage": "https://github.com/futurice/grunt-transifex-resjson",
   "author": {
     "name": "Teemu Sidoroff",
     "email": "teemu.sidoroff@futurice.com"
@@ -39,6 +39,8 @@
   },
   "keywords": [
     "gruntplugin",
-    "transifex"
+    "transifex",
+    "resjson",
+    "translation"
   ]
 }
