@@ -526,7 +526,7 @@ module.exports = function (grunt) {
     }
 
     function getKeyForComment(str) {
-        return str.slice(1).replace(/\.comment$/, "");
+        return str.match(/^_(.*)\.comment$/)[1];
     }
 
     /* 
