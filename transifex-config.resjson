@@ -1,9 +1,10 @@
 /*
-    Sample configuration file for transifex-resjson grunt tasks. 
+    Sample configuration file for transifex-resjson grunt tasks.
 */
 {
   /*
-	Settings for Transifex API credentials and Transifex project specific info.
+      Settings for Transifex API credentials and Transifex project specific
+      info.
   */
   transifex: {
     /*
@@ -22,44 +23,46 @@
     projectSlug: "transifex-projectslug",
 
     /*
-	   List of Transifex users used as coordinators for languages created 
-       using the tasks
-	*/
+        List of Transifex users used as coordinators for languages created
+        using the tasks
+    */
     langCoordinators: ["user1", "user2"],
     /* 
-	  The slug name for the main resources file, the slug must match the
-     local file name without the .json file extension.
-	*/
-
+        The slug name for the main resources file, the slug must match the
+        local file name without the .json file extension.
+    */
     mainResourceSlug: "resources",
 
     /*
-	 Source language code used in Transifex project. The language code
-     is in Transifex format.
-	*/
-	sourceLanguage: "en_US",
+       Source language code used in Transifex project. The language code
+       is in Transifex format.
+    */
+    sourceLanguage: "en_US",
   },
   /*
-	 Settings for your local project 
+      Settings for your local project
   */
   localProject: {
 
     /*
-	   Directory in your local project structure containing
-       RESJSON files 
-	*/ 
+       Directory in your local project structure containing
+       RESJSON files
+    */ 
     stringsPath: "src/strings",
 
     /*
-	   Directory containing the resource files containing the 
+       Directory containing the resource files containing the 
        source language strings
-	*/
+    */
     sourceLangStringsPath: "src/strings/en-US",
 
     /*
-	   File containing additional comments (copyrights, instructions, etc.) you wish to concatenate to your resources files that
+       File containing additional comments (copyright info, instructions, etc.) 
+       you wish to concatenate to your resources files that
        are received from Transifex.
-	*/
-    commentPreambleFile: "src/strings comment-preamble.resource"
+
+       Note: even if it is empty, this file is required for now.
+    */
+    commentPreambleFile: "src/strings/comment-preamble.resource"
   }
 }

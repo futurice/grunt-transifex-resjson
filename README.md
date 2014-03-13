@@ -35,7 +35,9 @@ Define the configuration file name in `initConfig`:
 	}
 ```
 
-And finally setup the configuration file as described in the following section.
+Setup the configuration file as described in the following section.
+
+Finally, create a preamble file to the location set in the option `commentPreambleFile` of the configuration file. The contents of the file is attached to the start of the resources files generated from RESJSON data downloaded from Transifex.
 
 ### <span id="Configuration file">Configuration file</span>
 
@@ -103,7 +105,7 @@ The config file contains your Transifex project info for accessing the [Transife
 	   File containing additional comments (copyrights, instructions, etc.) you wish to concatenate to your resources files that
        are received from Transifex.
 	*/
-    commentPreambleFile: "src/strings comment-preamble.resource"
+    commentPreambleFile: "src/strings/comment-preamble.resource"
   }
 }
 ```
