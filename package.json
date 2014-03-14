@@ -17,7 +17,7 @@
   "licenses": [
     {
       "type": "MIT",
-      "url": "-/blob/master/LICENSE-MIT"
+      "url": "https://github.com/futurice/grunt-transifex-resjson/blob/master/LICENCE-MIT"
     }
   ],
   "engines": {
