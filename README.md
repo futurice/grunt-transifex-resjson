@@ -105,7 +105,13 @@ The config file contains your Transifex project info for accessing the [Transife
 	   File containing additional comments (copyrights, instructions, etc.) you wish to concatenate to your resources files that
        are received from Transifex.
 	*/
-    commentPreambleFile: "src/strings/comment-preamble.resource"
+    commentPreambleFile: "src/strings/comment-preamble.resource",
+
+    /*
+        Array of file names of resources in the `sourceLangStringsPath` that should be ignored by 
+        Transifex.
+    */
+    ignoredResources: ["dev-resources.resjson"]
   }
 }
 ```
@@ -167,7 +173,7 @@ Creates a new resource in Transifex. The basename of the file is used as the slu
 ##### Usage
 
 ```js
-grunt tx-add-resource --file <basename-for-resource.resjson> --name="Display name in Transifex"
+grunt tx-add-resource --file="<basename-for-resource.resjson>" --name="Display name in Transifex"
 ```
 
 

@@ -34,35 +34,42 @@
     mainResourceSlug: "resources",
 
     /*
-       Source language code used in Transifex project. The language code
-       is in Transifex format.
+        Source language code used in Transifex project. The language code
+        is in Transifex format.
     */
     sourceLanguage: "en_US",
   },
   /*
-      Settings for your local project
+        Settings for your local project
   */
   localProject: {
 
     /*
-       Directory in your local project structure containing
-       RESJSON files
+        Directory in your local project structure containing
+        RESJSON files
     */ 
     stringsPath: "src/strings",
 
     /*
-       Directory containing the resource files containing the 
-       source language strings
+        Directory containing the resource files containing the 
+        source language strings
     */
     sourceLangStringsPath: "src/strings/en-US",
 
     /*
-       File containing additional comments (copyright info, instructions, etc.) 
-       you wish to concatenate to your resources files that
-       are received from Transifex.
+        File containing additional comments (copyright info, instructions, etc.) 
+        you wish to concatenate to your resources files that
+        are received from Transifex.
 
-       Note: even if it is empty, this file is required for now.
+        Note: even if it is empty, this file is required for now.
     */
-    commentPreambleFile: "src/strings/comment-preamble.resource"
+    commentPreambleFile: "src/strings/comment-preamble.resource",
+
+    /*
+        Array of file names of resources in the `sourceLangStringsPath` that should be ignored by
+        Transifex when pushing resources. Resources with the same file names in translation 
+        directories are also ignored when pushing translations.
+    */
+    ignoredResources: ["dev-resources.resjson"]
   }
 }

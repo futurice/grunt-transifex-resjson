@@ -22,6 +22,7 @@ module.exports = function (grunt) {
     var SOURCE_LANG_STRINGS_PATH;
     var COMMENT_PREAMBLE_FILE;
     var TX_SOURCE_LANGUAGE;
+    var IGNORED_RESOURCES;
 
     var transifexConfig;
 
@@ -51,6 +52,9 @@ module.exports = function (grunt) {
       SOURCE_LANG_STRINGS_PATH = transifexConfig.localProject.sourceLangStringsPath;
       COMMENT_PREAMBLE_FILE = transifexConfig.localProject.commentPreambleFile;
       TX_SOURCE_LANGUAGE = transifexConfig.transifex.sourceLanguage;
+
+      // optional config options
+      IGNORED_RESOURCES = transifexConfig.localProject.ignoredResources || [];
     }
 
     grunt.registerTask("tx-project-resources", "Get project status from Transifex", function () {
@@ -102,8 +106,10 @@ module.exports = function (grunt) {
         var resources = [];
 
         grunt.file.recurse(SOURCE_LANG_STRINGS_PATH + "/", function (abspath, rootdir, subdir, filename) {
-            var slug = filename.replace(/\.resjson/, "");
-            resources.push(slug);
+            if (!isIgnoredResource(filename) && filename.match(/\.resjson$/)) {
+                var slug = filename.replace(/\.resjson/, "");
+                resources.push(slug);
+            }
         });
 
         var promises = resources.map(txPushResource);
@@ -178,6 +184,10 @@ module.exports = function (grunt) {
             failAndPrintUsage(file + " doesn't exist");
         }
 
+        if (isIgnoredResource(fileOpt)  && !grunt.option("force")) {
+            failAndPrintUsage(file + " is listed in ignoredResources, use --force to add it anyway");
+        }
+
         var jsonContent = rjson.parse(grunt.file.read(file));
         var slugName = fileOpt.replace(/\.resjson$/, "");
 
@@ -219,8 +229,10 @@ module.exports = function (grunt) {
             if (txLangCode && txLangCode !== TX_SOURCE_LANGUAGE) {
                 resourceFiles[txLangCode] = [];
                 grunt.file.recurse(dirname, function (abspath, rootdir, subdir, filename) {
-                    var slug = filename.replace(/\.resjson/, "");
-                    resourceFiles[txLangCode].push({ path: abspath, slug: slug });
+                    if (!isIgnoredResource(filename) && filename.match(/\.resjson$/)) {
+                        var slug = filename.replace(/\.resjson/, "");
+                        resourceFiles[txLangCode].push({ path: abspath, slug: slug });
+                    }
                 });
             }
         });
@@ -527,6 +539,10 @@ module.exports = function (grunt) {
 
     function getKeyForComment(str) {
         return str.match(/^_(.*)\.comment$/)[1];
+    }
+
+    function isIgnoredResource(filename) {
+        return _.contains(IGNORED_RESOURCES, filename);
     }
 
     /* 
