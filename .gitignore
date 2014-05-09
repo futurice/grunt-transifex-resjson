@@ -6,6 +6,11 @@ lib-cov
 *.out
 *.pid
 *.gz
+*.suo
+*.jsproj.user
+
+bin/
+bld/
 
 pids
 logs
