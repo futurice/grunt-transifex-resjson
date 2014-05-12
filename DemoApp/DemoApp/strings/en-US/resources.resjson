@@ -1,0 +1,10 @@
+﻿{
+    "paragraph"                : "This is a paragraph.",
+    "_paragraph.comment"       : "Comment for the opening paragraph.",
+
+    "listItem1"                : "This is the first list item.",
+    "_listItem1.comment"       : "Comment for the first list item.",
+
+    "listItem2"                : "This is the second list item.",
+    "_listItem2.comment"       : "Comment for the first list item."
+}
