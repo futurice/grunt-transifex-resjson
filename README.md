@@ -27,12 +27,12 @@ Define the configuration file name in `initConfig`:
 
 ```js
     grunt.initConfig({
-	...
+    ...
         "transifex-resjson": {
             transifex_resjson_config: "project-tx-config-file.resjson"
         }
-	...
-	}
+    ...
+    }
 ```
 
 Setup the configuration file as described in the following section.
@@ -48,7 +48,7 @@ The config file contains your Transifex project info for accessing the [Transife
 ```js
 {
   /*
-	Settings for Transifex API credentials and Transifex project specific info.
+      Settings for Transifex API credentials and Transifex project specific info.
   */
   transifex: {
     /*
@@ -67,49 +67,59 @@ The config file contains your Transifex project info for accessing the [Transife
     projectSlug: "transifex-projectslug",
 
     /*
-	   List of Transifex users used as coordinators for languages created 
+       List of Transifex users used as coordinators for languages created 
        using the tasks
-	*/
+    */
     langCoordinators: ["user1", "user2"],
     /* 
-	  The slug name for the main resources file, the slug must match the
-     local file name without the .json file extension.
-	*/
+        The slug name for the main resources file, the slug must match the
+        local file name without the .json file extension.
+    */
 
     mainResourceSlug: "resources",
 
     /*
-	 Source language code used in Transifex project. The language code
-     is in Transifex format.
-	*/
-	sourceLanguage: "en_US",
+       Source language code used in Transifex project. The language code
+        is in Transifex format.
+    */
+    sourceLanguage: "en_US",
+    /*
+        Set which translations are downloaded from Transifex, only reviewed
+        or all translations. Available modes are: `default` and `reviewed`.
+        If not set, the `default` is used. Optional parameter.
+        
+        See: http://docs.transifex.com/developer/api/translations for
+        details about the mode parameter.
+    */
+    translationMode: "reviewed",
+  },
+
   },
   /*
-	 Settings for your local project 
+     Settings for your local project 
   */
   localProject: {
 
-    /*
-	   Directory in your local project structure containing
-       RESJSON files 
-	*/ 
+    /*       
+        Directory in your local project structure containing
+        RESJSON files 
+    */ 
     stringsPath: "src/strings",
 
     /*
-	   Directory containing the resource files containing the 
-       source language strings
-	*/
+        Directory containing the resource files containing the 
+        source language strings
+    */
     sourceLangStringsPath: "src/strings/en-US",
 
     /*
-	   File containing additional comments (copyrights, instructions, etc.) you wish to concatenate to your resources files that
-       are received from Transifex.
-	*/
+        File containing additional comments (copyrights, instructions, etc.) you 
+        wish to concatenate to your resources files that are received from Transifex.
+    */
     commentPreambleFile: "src/strings/comment-preamble.resource",
 
     /*
-        Array of file names of resources in the `sourceLangStringsPath` that should be ignored by 
-        Transifex.
+        Array of file names of resources in the `sourceLangStringsPath` that should be ignored by Transifex. Optional parameter.
     */
     ignoredResources: ["dev-resources.resjson"]
   }
@@ -196,7 +206,7 @@ grunt tx-push-resources
 ##### Description
 
 
-Retrieves translations from Transifex project. The task can be given a list of language codes as argument to limit which translations are downloaded. Only translations that are marked as reviewed are downloaded, non-reviewed strings are returned identical to the original strings.
+Retrieves translations from Transifex project. The task can be given a list of language codes as argument to limit which translations are downloaded. If the configuration parameter `transifex.translationMode` is set to `reviewed`, only the translations marked as reviewed in Transifex are returned as translated and the non-reviewed strings are returned identical to the source language strings. Otherwise the default mode is used and all translations regardless of their review status are downloaded.
 
 The language codes used as arguments are those used in the local project as directory names, i.e. **not** Transifex language codes.
 

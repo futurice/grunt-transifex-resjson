@@ -18,6 +18,7 @@ module.exports = function (grunt) {
     var TX_PROJECT_SLUG; 
     var TX_COORDINATORS;
     var TX_MAIN_RESOURCE_SLUG;
+    var TX_TRANSLATION_MODE;
     var STRINGS_PATH;
     var SOURCE_LANG_STRINGS_PATH;
     var COMMENT_PREAMBLE_FILE;
@@ -54,6 +55,7 @@ module.exports = function (grunt) {
       TX_SOURCE_LANGUAGE = transifexConfig.transifex.sourceLanguage;
 
       // optional config options
+      TX_TRANSLATION_MODE = transifexConfig.transifex.translationMode || "default";
       IGNORED_RESOURCES = transifexConfig.localProject.ignoredResources || [];
     }
 
@@ -399,7 +401,7 @@ module.exports = function (grunt) {
         var langCode = resource.lang;
         var resourceSlug = resource.slug;
 
-        var action = TX_API + "/project/" + TX_PROJECT_SLUG + "/resource/" + resourceSlug + "/translation/" + langCode + "/?file&mode=reviewed";
+        var action = TX_API + "/project/" + TX_PROJECT_SLUG + "/resource/" + resourceSlug + "/translation/" + langCode + "/?file&mode=" + TX_TRANSLATION_MODE;
         var deferred = q.defer();
         request.get({
             url: action,
