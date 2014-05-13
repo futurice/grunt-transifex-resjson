@@ -1,0 +1,8 @@
+﻿// This file is ignored when pushing resources to Transifex with
+// tx-push-resources.
+// It can be used for holding strings that haven't found their final
+// shape yet that you don't want unecessary be pushed for translation.
+{
+    "ignoredItem"                : "This is an unused development item.",
+    "_ignoredItem.comment"       : "This key doesn't warrant a translation just yet, keeping it in the resource file that is configured to be ignored."
+}
