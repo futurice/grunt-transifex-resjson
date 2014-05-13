@@ -16,7 +16,7 @@ module.exports = function(grunt) {
     // Config file location for transifex-resjson
     "transifex-resjson": {
 
-        transifex_resjson_config: "transifex-config.resjson",
+        transifex_resjson_config: "transifex.resjson",
     },
     jshint: {
       all: [
