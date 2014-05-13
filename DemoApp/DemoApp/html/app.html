@@ -1,0 +1,36 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <script src="/js/app.js"></script>
+</head>
+<body>
+    <div>
+        <button class="localize" data-language="en-US">
+            Localize HTML (en-US)
+        </button>
+        
+        <button class="localize" data-language="fi-FI">
+            Localize HTML (fi-FI)
+        </button>
+        
+        <br />
+        <br />
+    </div>
+    <div id="app">
+        <p id="paragraph" data-win-res="{textContent: 'paragraph'}">
+            This is placeholder text that will get replaced when the button is clicked above
+        </p>
+        <ul>
+            <li id="item1" data-win-res="{textContent: 'listItem1'}">
+                This is placeholder text that
+                will get replaced when the button is clicked above
+            </li>
+            <li id="item2" data-win-res="{textContent: 'listItem2'}">
+                This is placeholder text that
+                will get replaced when the button is clicked above
+            </li>
+        </ul>
+    </div>
+</body>
+</html>

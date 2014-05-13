@@ -1,0 +1,25 @@
+{
+  transifex: {
+      api: "https://www.transifex.com/api/2",
+      auth: {
+        user: "user",
+        pass: "pass",
+      },
+      projectSlug: "project-slug",
+
+      // List of transifex users used as coordinators for languages created through the api.
+      langCoordinators: ["user"],
+
+      // The slug name for the main resources file. The slug must match the
+      // local file name without the .json file extension.      
+      mainResourceSlug: "resources",
+
+      // Source language code in transifex.
+      sourceLanguage: "en_US",
+    },    
+    localProject: {
+      stringsPath: "strings",
+      sourceLangStringsPath: "strings/en-US",
+      commentPreambleFile: "strings/comment-preamble.resource"
+    }
+}
