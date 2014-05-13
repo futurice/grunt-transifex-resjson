@@ -123,16 +123,23 @@ module.exports = function (grunt) {
         });
 
         var promises = resources.map(txPushResource);
-        q.all(promises).then(function (results) {
-            results.forEach(function (result, i) {
-                grunt.log.writeln("Resource " + resources[i] + " updated: ");
-                grunt.log.writeln("Strings added: " + result.strings_added + ", strings updated: " + result.strings_updated + ", strings deleted: " + result.strings_delete);
+        q.allSettled(promises).then(function (results) {
+            var taskResult = true;
+            _.forEach(results, function (promise, i) {
+                var resource = resources[i];
+                if (promise.state === "fulfilled") {
+                    var result = promise.value;
+                    grunt.log.ok("Resource " + resource + " updated: ");
+                    grunt.log.ok("Strings added: " + result.strings_added + ", strings updated: " + result.strings_updated + ", strings deleted: " + result.strings_delete);
+                } else {
+                    grunt.log.error("Failed to push resource " + resource + ": " + promise.reason);
+                    grunt.log.error("Check that the resource is already added into Transifex.");
+                    taskResult = false;
+                }
             });
-            done(true);
-        }, function onError(err) {
-            grunt.log.error("Adding resources failed");
-            grunt.log.error(err);
-            done(false);
+            return taskResult;
+        }).done(function (result) {
+            done(result);
         });
     });
 
@@ -211,7 +218,7 @@ module.exports = function (grunt) {
         var jsonString = JSON.stringify(jsonContent, null, 2);
 
         txCreateResource(displayName, slugName, jsonString).done(function onSuccess(result) {
-            grunt.log.writeln("Uploaded resource " + slugName);
+            grunt.log.ok("Uploaded resource " + slugName);
             done(true);
         }, function onError(result) {
             grunt.log.error("Error while creating resource:", result);
@@ -251,14 +258,30 @@ module.exports = function (grunt) {
         var promises = [];
         _.forEach(resourceFiles, function (resources, lang) {
             resources.forEach(function (resource) {
-                promises.push(txPushTranslation(resource.path, resource.slug, lang));
+                var promise = txPushTranslation(resource.path, resource.slug, lang);
+                // add metadata for the promises
+                promise.lang = lang;
+                promise.resource = resource.slug;
+                promises.push(promise);
             });
         });
-        q.allSettled(promises).done(function onSuccess(results) {
-            done(true);
-        }, function onError(err) {
-            grunt.log.error("Error while pushing translations: " + err);
-            done(false);
+
+        q.allSettled(promises).then(function onSuccess(results) {
+            var taskResult = true;
+            _.forEach(results, function (promise, i) {
+                var data = promises[i];
+                if (promise.state === "fulfilled") {
+                    var result = promise.value;
+                    grunt.log.ok("Translation for " + data.lang + " of resource " + data.resource + " uploaded to Transifex");
+                    grunt.log.ok("String added: "+ result.strings_added +", updated: " + result.strings_updated +", deleted: " + result.strings_delete);
+                } else {
+                    grunt.log.error("Failed to push " + data.lang + " translation for " + data.resource + ": " + promise.reason);
+                    taskResult = false;
+                }
+            });
+            return taskResult;
+        }).done(function (result) {
+            done(result);
         });
     });
 
@@ -292,8 +315,6 @@ module.exports = function (grunt) {
                 grunt.log.writeln("Error: " + err);
                 done(false);
             });
-
-
     });
 
     /*
@@ -474,8 +495,10 @@ module.exports = function (grunt) {
             if (!error && response.statusCode === 200) {
                 deferred.resolve(body);
             } else {
-                grunt.log.error("Error while accessing " + opts.action + ": " + response ? "[" + response.statusCode + "]: " + response.body : error);
-                deferred.reject(error);
+                var errorMsg = "[" + response.statusCode + "]: " + response.body;
+                grunt.log.debug("Error while accessing URL " + action);
+                grunt.log.debug(errorMsg);
+                deferred.reject(errorMsg);
             }
         });
 
