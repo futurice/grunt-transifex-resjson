@@ -69,12 +69,20 @@ module.exports = function (grunt) {
             url: action,
             auth: TX_AUTH
         }, function (error, response, body) {
-            if (error) {
-                grunt.log.writeln("Received error: " + error);
-                done(false);
-            } else {
-                grunt.log.writeln("Project resources: " + body);
+            if (response.statusCode === 200) {
+                body = JSON.parse(body);
+                if (_.isEmpty(body)) {
+                    grunt.log.writeln("No resources found. You can add resources to Transifex with tx-add-resource task.");
+                } else {
+                    grunt.log.writeln("Project resources in Transifex:");
+                    body.forEach(function (resource) {
+                        grunt.log.writeln(resource.name);
+                    });
+                }
                 done(true);
+            } else {
+                grunt.log.writeln("Received error: [" + response.statusCode + "] " + body);
+                done(false);
             }
         });
     });
@@ -122,6 +130,7 @@ module.exports = function (grunt) {
             });
             done(true);
         }, function onError(err) {
+            grunt.log.error("Adding resources failed");
             grunt.log.error(err);
             done(false);
         });
@@ -161,7 +170,7 @@ module.exports = function (grunt) {
 
     /*
         Push a new resource file into Transifex.
-        "grunt tx-add-resource --file 123123123.resjson --name='Name for Transifex UI'"
+        "grunt tx-add-resource --file='123123123.resjson' --name='Name for Transifex UI'"
         The file is given without path and is assumed to reside at 
         `options.localProject.sourceLangStringsPath`.
     */
