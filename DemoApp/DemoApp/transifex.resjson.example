@@ -20,6 +20,7 @@
     localProject: {
       stringsPath: "strings",
       sourceLangStringsPath: "strings/en-US",
-      commentPreambleFile: "strings/comment-preamble.resource"
+      commentPreambleFile: "strings/comment-preamble.resource",
+      ignoredResources: ["dev-resources.resjson"]
     }
 }

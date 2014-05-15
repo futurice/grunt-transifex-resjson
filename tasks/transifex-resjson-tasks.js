@@ -18,10 +18,12 @@ module.exports = function (grunt) {
     var TX_PROJECT_SLUG; 
     var TX_COORDINATORS;
     var TX_MAIN_RESOURCE_SLUG;
+    var TX_TRANSLATION_MODE;
     var STRINGS_PATH;
     var SOURCE_LANG_STRINGS_PATH;
     var COMMENT_PREAMBLE_FILE;
     var TX_SOURCE_LANGUAGE;
+    var IGNORED_RESOURCES;
 
     var transifexConfig;
 
@@ -51,6 +53,10 @@ module.exports = function (grunt) {
       SOURCE_LANG_STRINGS_PATH = transifexConfig.localProject.sourceLangStringsPath;
       COMMENT_PREAMBLE_FILE = transifexConfig.localProject.commentPreambleFile;
       TX_SOURCE_LANGUAGE = transifexConfig.transifex.sourceLanguage;
+
+      // optional config options
+      TX_TRANSLATION_MODE = transifexConfig.transifex.translationMode || "default";
+      IGNORED_RESOURCES = transifexConfig.localProject.ignoredResources || [];
     }
 
     grunt.registerTask("tx-project-resources", "Get project status from Transifex", function () {
@@ -63,12 +69,20 @@ module.exports = function (grunt) {
             url: action,
             auth: TX_AUTH
         }, function (error, response, body) {
-            if (error) {
-                grunt.log.writeln("Received error: " + error);
-                done(false);
-            } else {
-                grunt.log.writeln("Project resources: " + body);
+            if (response.statusCode === 200) {
+                body = JSON.parse(body);
+                if (_.isEmpty(body)) {
+                    grunt.log.writeln("No resources found. You can add resources to Transifex with tx-add-resource task.");
+                } else {
+                    grunt.log.writeln("Project resources in Transifex:");
+                    body.forEach(function (resource) {
+                        grunt.log.writeln(resource.name);
+                    });
+                }
                 done(true);
+            } else {
+                grunt.log.writeln("Received error: [" + response.statusCode + "] " + body);
+                done(false);
             }
         });
     });
@@ -102,20 +116,30 @@ module.exports = function (grunt) {
         var resources = [];
 
         grunt.file.recurse(SOURCE_LANG_STRINGS_PATH + "/", function (abspath, rootdir, subdir, filename) {
-            var slug = filename.replace(/\.resjson/, "");
-            resources.push(slug);
+            if (!isIgnoredResource(filename) && filename.match(/\.resjson$/)) {
+                var slug = filename.replace(/\.resjson/, "");
+                resources.push(slug);
+            }
         });
 
         var promises = resources.map(txPushResource);
-        q.all(promises).then(function (results) {
-            results.forEach(function (result, i) {
-                grunt.log.writeln("Resource " + resources[i] + " updated: ");
-                grunt.log.writeln("Strings added: " + result.strings_added + ", strings updated: " + result.strings_updated + ", strings deleted: " + result.strings_delete);
+        q.allSettled(promises).then(function (results) {
+            var taskResult = true;
+            _.forEach(results, function (promise, i) {
+                var resource = resources[i];
+                if (promise.state === "fulfilled") {
+                    var result = promise.value;
+                    grunt.log.ok("Resource " + resource + " updated: ");
+                    grunt.log.ok("Strings added: " + result.strings_added + ", strings updated: " + result.strings_updated + ", strings deleted: " + result.strings_delete);
+                } else {
+                    grunt.log.error("Failed to push resource " + resource + ": " + promise.reason);
+                    grunt.log.error("Check that the resource is already added into Transifex.");
+                    taskResult = false;
+                }
             });
-            done(true);
-        }, function onError(err) {
-            grunt.log.error(err);
-            done(false);
+            return taskResult;
+        }).done(function (result) {
+            done(result);
         });
     });
 
@@ -153,7 +177,7 @@ module.exports = function (grunt) {
 
     /*
         Push a new resource file into Transifex.
-        "grunt tx-add-resource --file 123123123.resjson --name='Name for Transifex UI'"
+        "grunt tx-add-resource --file='123123123.resjson' --name='Name for Transifex UI'"
         The file is given without path and is assumed to reside at 
         `options.localProject.sourceLangStringsPath`.
     */
@@ -178,6 +202,10 @@ module.exports = function (grunt) {
             failAndPrintUsage(file + " doesn't exist");
         }
 
+        if (isIgnoredResource(fileOpt)  && !grunt.option("force")) {
+            failAndPrintUsage(file + " is listed in ignoredResources, use --force to add it anyway");
+        }
+
         var jsonContent = rjson.parse(grunt.file.read(file));
         var slugName = fileOpt.replace(/\.resjson$/, "");
 
@@ -190,7 +218,7 @@ module.exports = function (grunt) {
         var jsonString = JSON.stringify(jsonContent, null, 2);
 
         txCreateResource(displayName, slugName, jsonString).done(function onSuccess(result) {
-            grunt.log.writeln("Uploaded resource " + slugName);
+            grunt.log.ok("Uploaded resource " + slugName);
             done(true);
         }, function onError(result) {
             grunt.log.error("Error while creating resource:", result);
@@ -219,8 +247,10 @@ module.exports = function (grunt) {
             if (txLangCode && txLangCode !== TX_SOURCE_LANGUAGE) {
                 resourceFiles[txLangCode] = [];
                 grunt.file.recurse(dirname, function (abspath, rootdir, subdir, filename) {
-                    var slug = filename.replace(/\.resjson/, "");
-                    resourceFiles[txLangCode].push({ path: abspath, slug: slug });
+                    if (!isIgnoredResource(filename) && filename.match(/\.resjson$/)) {
+                        var slug = filename.replace(/\.resjson/, "");
+                        resourceFiles[txLangCode].push({ path: abspath, slug: slug });
+                    }
                 });
             }
         });
@@ -228,14 +258,30 @@ module.exports = function (grunt) {
         var promises = [];
         _.forEach(resourceFiles, function (resources, lang) {
             resources.forEach(function (resource) {
-                promises.push(txPushTranslation(resource.path, resource.slug, lang));
+                var promise = txPushTranslation(resource.path, resource.slug, lang);
+                // add metadata for the promises
+                promise.lang = lang;
+                promise.resource = resource.slug;
+                promises.push(promise);
             });
         });
-        q.allSettled(promises).done(function onSuccess(results) {
-            done(true);
-        }, function onError(err) {
-            grunt.log.error("Error while pushing translations: " + err);
-            done(false);
+
+        q.allSettled(promises).then(function onSuccess(results) {
+            var taskResult = true;
+            _.forEach(results, function (promise, i) {
+                var data = promises[i];
+                if (promise.state === "fulfilled") {
+                    var result = promise.value;
+                    grunt.log.ok("Translation for " + data.lang + " of resource " + data.resource + " uploaded to Transifex");
+                    grunt.log.ok("String added: "+ result.strings_added +", updated: " + result.strings_updated +", deleted: " + result.strings_delete);
+                } else {
+                    grunt.log.error("Failed to push " + data.lang + " translation for " + data.resource + ": " + promise.reason);
+                    taskResult = false;
+                }
+            });
+            return taskResult;
+        }).done(function (result) {
+            done(result);
         });
     });
 
@@ -269,8 +315,6 @@ module.exports = function (grunt) {
                 grunt.log.writeln("Error: " + err);
                 done(false);
             });
-
-
     });
 
     /*
@@ -387,7 +431,7 @@ module.exports = function (grunt) {
         var langCode = resource.lang;
         var resourceSlug = resource.slug;
 
-        var action = TX_API + "/project/" + TX_PROJECT_SLUG + "/resource/" + resourceSlug + "/translation/" + langCode + "/?file&mode=reviewed";
+        var action = TX_API + "/project/" + TX_PROJECT_SLUG + "/resource/" + resourceSlug + "/translation/" + langCode + "/?file&mode=" + TX_TRANSLATION_MODE;
         var deferred = q.defer();
         request.get({
             url: action,
@@ -451,8 +495,10 @@ module.exports = function (grunt) {
             if (!error && response.statusCode === 200) {
                 deferred.resolve(body);
             } else {
-                grunt.log.error("Error while accessing " + opts.action + ": " + response ? "[" + response.statusCode + "]: " + response.body : error);
-                deferred.reject(error);
+                var errorMsg = "[" + response.statusCode + "]: " + response.body;
+                grunt.log.debug("Error while accessing URL " + action);
+                grunt.log.debug(errorMsg);
+                deferred.reject(errorMsg);
             }
         });
 
@@ -527,6 +573,10 @@ module.exports = function (grunt) {
 
     function getKeyForComment(str) {
         return str.match(/^_(.*)\.comment$/)[1];
+    }
+
+    function isIgnoredResource(filename) {
+        return _.contains(IGNORED_RESOURCES, filename);
     }
 
     /* 
