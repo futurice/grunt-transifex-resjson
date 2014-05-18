@@ -9,7 +9,6 @@ module.exports = function (grunt) {
 
     var rjson = require("relaxed-json");
 
-
     /* 
        Constant read from the module configuration file
      */
@@ -102,6 +101,8 @@ module.exports = function (grunt) {
                 createTranslationFile(result);
             });
         }).done(function onSuccess() {
+            // run tx-order-translations with same args as tx-pull-translations
+            grunt.task.run("tx-order-translations" + ((args === undefined) ? "" :  ":" + args));
             done(true);
         }, function onError(err) {
             grunt.log.error(err);
@@ -317,6 +318,37 @@ module.exports = function (grunt) {
             });
     });
 
+    grunt.registerTask("tx-order-translations", "Order translation resource file contents according to the source language resources", function(args) {
+        setupTransifexConfig();
+
+        var resources = getSourceLangResourceFiles();
+        var translations = getTranslationCodes();
+        translations = (args === undefined) ? translations : args.split(/,/);
+
+        var promises = [];
+        _.forEach(resources, function (resource) {
+            _.forEach(translations, function (langCode) {
+
+                var resourceContent = grunt.file.read(SOURCE_LANG_STRINGS_PATH + "/" + resource);
+                var translationFile = STRINGS_PATH + "/" + langCode + "/" + resource;
+
+                if (grunt.file.isFile(translationFile)) {
+                    var translationContent = grunt.file.read(translationFile);
+                    grunt.log.debug("Sorting "+ translationFile);
+                    var sortedTranslation = translateResourceContent(translationContent, resourceContent);
+                    if (sortedTranslation) {
+                        grunt.log.writeln("Rewriting "+ translationFile);
+                        grunt.file.write(translationFile, sortedTranslation);
+                    } else {
+                        grunt.log.warn("Failed to sort " + translationFile);
+                    }
+                } else {
+                    grunt.log.warn("No translation file "+ translationFile);
+                }
+            });
+        });
+    });
+
     /*
      * Helper for sending POST request for creating new Resource in Transifex
      */
@@ -503,6 +535,65 @@ module.exports = function (grunt) {
         });
 
         return deferred.promise;
+    }
+
+
+    /*
+        Create translated version of a resource file by
+        replacing resjson value by translations.
+    */
+    function translateResourceContent(translations, baseContent) {
+        var translatedContent = baseContent;
+        var translationsJSON = rjson.parse(translations);
+
+        Object.keys(translationsJSON).forEach(function(key) {
+            // skip comments
+            if (isComment(key)) {
+                return;
+            }
+            translatedContent = replaceValue(translatedContent, key, JSON.stringify(translationsJSON[key]));
+        });
+
+        return translatedContent;
+    }
+
+    /*
+        Replaces the value for `key` with `replacement`
+     */
+    function replaceValue(strings, key, replacement) {
+        var regexp = new RegExp('("' + key + '\\s*"\\s*:\\s*)".*"', "g");
+        // $1 consists of "key: ", see the regexp abobe
+        replacement = "$1" + replacement;
+        strings = strings.replace(regexp, replacement);
+        return strings;
+    }
+
+    /*
+        Return filenames of all source language resources exlucing ignored files.
+    */
+    function getSourceLangResourceFiles() {
+        var resources = [];
+        grunt.file.recurse(SOURCE_LANG_STRINGS_PATH, function(abspath, rootdir, subdir, filename) {            
+            if (filename.match(/\.resjson$/)) {
+                resources.push(filename);
+            }
+        });
+        return resources;
+    }
+
+    /*
+        Return array of language codes of translations under STRINGS_PATH
+    */
+    function getTranslationCodes() {
+        var translationCodes = [];
+        grunt.file.recurse(STRINGS_PATH, function(abspath, rootdir, subdir, filename) {
+            // treat any non-empty directories that can be mapped to a Transifex language code
+            // as translation directories
+            if (subdir && mapToTxLangCode(subdir) && TX_SOURCE_LANGUAGE !== mapToTxLangCode(subdir)) {                
+                translationCodes.push(subdir);
+            }
+        });
+        return _.uniq(translationCodes);
     }
 
     /*
