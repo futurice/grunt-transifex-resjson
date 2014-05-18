@@ -67,15 +67,6 @@
     sourceLangStringsPath: "src/strings/en-US",
 
     /*
-        File containing additional comments (copyright info, instructions, etc.) 
-        you wish to concatenate to your resources files that
-        are received from Transifex.
-
-        Note: even if it is empty, this file is required for now.
-    */
-    commentPreambleFile: "src/strings/comment-preamble.resource",
-
-    /*
         Array of file names of resources in the `sourceLangStringsPath` that should be ignored by
         Transifex when pushing resources. Resources with the same file names in translation 
         directories are also ignored when pushing translations.

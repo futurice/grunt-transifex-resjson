@@ -20,7 +20,6 @@ module.exports = function (grunt) {
     var TX_TRANSLATION_MODE;
     var STRINGS_PATH;
     var SOURCE_LANG_STRINGS_PATH;
-    var COMMENT_PREAMBLE_FILE;
     var TX_SOURCE_LANGUAGE;
     var IGNORED_RESOURCES;
 
@@ -50,7 +49,6 @@ module.exports = function (grunt) {
       TX_MAIN_RESOURCE_SLUG = transifexConfig.transifex.mainResourceSlug;
       STRINGS_PATH = transifexConfig.localProject.stringsPath;
       SOURCE_LANG_STRINGS_PATH = transifexConfig.localProject.sourceLangStringsPath;
-      COMMENT_PREAMBLE_FILE = transifexConfig.localProject.commentPreambleFile;
       TX_SOURCE_LANGUAGE = transifexConfig.transifex.sourceLanguage;
 
       // optional config options
@@ -598,13 +596,11 @@ module.exports = function (grunt) {
 
     /*
         Write translation resource file based on result from Transifex
-        with standard comment at the top and proper BOM markers.
     */
     function createTranslationFile(result) {
         var mappedLangCode = mapFromTxLangCode(result.langCode);
         var path = STRINGS_PATH + "/" + mappedLangCode + "/" + result.resourceSlug + ".resjson";
-        var commentPreamble = grunt.file.read(COMMENT_PREAMBLE_FILE);
-        grunt.file.write(path, commentPreamble + grunt.util.linefeed + result.translations.replace(/^\ufeff/, ""));
+        grunt.file.write(path, result.translations);
         grunt.log.writeln("Wrote resource file for " + result.langCode + " to " + path);
     }
 
@@ -691,7 +687,7 @@ module.exports = function (grunt) {
         /* The expected keys that should be present in the config file */
         var requiredKeys = ["transifex.api", "transifex.auth.user", "transifex.auth.pass", "transifex.projectSlug",
         "transifex.langCoordinators", "transifex.mainResourceSlug", "transifex.sourceLanguage", "localProject.stringsPath",
-        "localProject.sourceLangStringsPath", "localProject.commentPreambleFile"];
+        "localProject.sourceLangStringsPath"];
         var optionsKeys = flattenKeys(options);
 
         var missingProperties = requiredKeys.filter(function (k) { return !_.contains(optionsKeys, k); });

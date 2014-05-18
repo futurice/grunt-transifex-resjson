@@ -1,4 +1,8 @@
-﻿{
+﻿// Main resource file containing translatable text strings used in
+// the application.
+{
+    // We can also include inline comments in this file, they
+    // are copied over to the translated resource files as is.
     "paragraph"                : "This is a paragraph.",
     "_paragraph.comment"       : "Comment for the opening paragraph.",
 
