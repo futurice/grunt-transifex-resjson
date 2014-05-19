@@ -353,24 +353,23 @@ module.exports = function (grunt) {
         });
     });
 
-    grunt.registerTask("tx-add-instruction", "Update developer comment in Transifex for a specific translation key", function () {
+    /*
+        Usage grunt tx-add-instruction:key.id:comment
+    */
+    grunt.registerTask("tx-add-instruction", "Update developer comment in Transifex for a specific translation key", function (key, comment) {
         setupTransifexConfig();
 
         function failAndPrintUsage(errorMessage) {
-            var usageMessage = "Usage: " + grunt.task.current.nameArg +
-                " --key=key.id --comment='New multiline comment<br/><br/>With <a href='http://www.google.com'>link to external instructions</a>'";
+            var usageMessage = "Usage: tx-add-instruction:key.id:'comment html snippet'";
             failGruntTask(usageMessage, errorMessage);
         }
 
-        var key = grunt.option("key");
-        var comment = grunt.option("comment");
-
         if (!key) {
-            failAndPrintUsage("No option key defined.");
+            failAndPrintUsage("No key defined.");
         }
 
         if (!comment) {
-            failAndPrintUsage("No option comment defined.");
+            failAndPrintUsage("No comment defined.");
         }
 
         grunt.log.writeln("Updating key " + key + " with comment " + comment + " in Transifex");
