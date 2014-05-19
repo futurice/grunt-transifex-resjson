@@ -69,12 +69,6 @@ The config file contains your Transifex project info for accessing the [Transife
        using the tasks
     */
     langCoordinators: ["user1", "user2"],
-    /* 
-        The slug name for the main resources file, the slug must match the
-        local file name without the .json file extension.
-    */
-
-    mainResourceSlug: "resources",
 
     /*
        Source language code used in Transifex project. The language code
@@ -273,13 +267,13 @@ Includes detailed instructions in addition to the comments in resources file for
 ##### Usage
 
 ```sh
-grunt tx-add-instruction --key='<resource-key>' --comment='<comment-str>'
+grunt tx-add-instruction:resource-id:key.id:'<comment-str>'
 ```
 
 e.g.
 
 ```sh
-grunt tx-add-instruction --key='my.little.resource' --comment='<strong>Important!</strong> Comment can include HTML markup and <a href="http://www.google.com">links</a>'
+grunt tx-add-instruction:extra-resources:my.little.key.id:'<strong>Important!</strong> Comment can include HTML markup and <a href="http://www.google.com">links</a>'
 ```
 
 ## License

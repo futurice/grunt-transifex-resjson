@@ -27,11 +27,6 @@
         using the tasks
     */
     langCoordinators: ["user1", "user2"],
-    /* 
-        The slug name for the main resources file, the slug must match the
-        local file name without the .json file extension.
-    */
-    mainResourceSlug: "resources",
 
     /*
         Source language code used in Transifex project. The language code

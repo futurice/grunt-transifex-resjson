@@ -16,7 +16,6 @@ module.exports = function (grunt) {
     var TX_AUTH; 
     var TX_PROJECT_SLUG; 
     var TX_COORDINATORS;
-    var TX_MAIN_RESOURCE_SLUG;
     var TX_TRANSLATION_MODE;
     var STRINGS_PATH;
     var SOURCE_LANG_STRINGS_PATH;
@@ -46,7 +45,6 @@ module.exports = function (grunt) {
       TX_PROJECT_SLUG = transifexConfig.transifex.projectSlug;
       TX_COORDINATORS = transifexConfig.transifex.langCoordinators;
 
-      TX_MAIN_RESOURCE_SLUG = transifexConfig.transifex.mainResourceSlug;
       STRINGS_PATH = transifexConfig.localProject.stringsPath;
       SOURCE_LANG_STRINGS_PATH = transifexConfig.localProject.sourceLangStringsPath;
       TX_SOURCE_LANGUAGE = transifexConfig.transifex.sourceLanguage;
@@ -354,14 +352,26 @@ module.exports = function (grunt) {
     });
 
     /*
-        Usage grunt tx-add-instruction:key.id:comment
+        Usage grunt tx-add-instruction:resource-id:key.id:comment
     */
-    grunt.registerTask("tx-add-instruction", "Update developer comment in Transifex for a specific translation key", function (key, comment) {
+    grunt.registerTask("tx-add-instruction", "Update developer comment in Transifex for a specific translation key", function (resource, key, comment) {
         setupTransifexConfig();
 
         function failAndPrintUsage(errorMessage) {
             var usageMessage = "Usage: tx-add-instruction:key.id:'comment html snippet'";
             failGruntTask(usageMessage, errorMessage);
+        }
+
+        if (this.args.length < 3) {
+            failAndPrintUsage("Invalid parameters.");
+        }
+
+        if (!resource) {
+            failAndPrintUsage("No resource defined.");
+        }
+
+        if (!resourceFileExists(resource)) {
+         failAndPrintUsage("Resource file " + resource + ".resjson not found in " + SOURCE_LANG_STRINGS_PATH);
         }
 
         if (!key) {
@@ -372,14 +382,15 @@ module.exports = function (grunt) {
             failAndPrintUsage("No comment defined.");
         }
 
-        grunt.log.writeln("Updating key " + key + " with comment " + comment + " in Transifex");
+        grunt.log.writeln("Updating key " + key + " in resource " + resource + " with comment " + comment + " in Transifex");
         var done = this.async();
-        txUpdateInstruction(TX_MAIN_RESOURCE_SLUG, key, comment)
+        txUpdateInstruction(resource, key, comment)
             .done(function onSuccess(result) {
-                grunt.log.writeln(result);
+                grunt.log.ok("Comment updated in Transifex to "+ comment);
                 done(true);
             }, function onError(err) {
-                grunt.log.writeln("Error: " + err);
+                grunt.log.error(err);
+                grunt.log.writeln("Check that the key "+ key + " exists in "+ resource + ".resjson");
                 done(false);
             });
     });
@@ -767,8 +778,9 @@ module.exports = function (grunt) {
 
         /* The expected keys that should be present in the config file */
         var requiredKeys = ["transifex.api", "transifex.auth.user", "transifex.auth.pass", "transifex.projectSlug",
-        "transifex.langCoordinators", "transifex.mainResourceSlug", "transifex.sourceLanguage", "localProject.stringsPath",
+        "transifex.langCoordinators", "transifex.sourceLanguage", "localProject.stringsPath",
         "localProject.sourceLangStringsPath"];
+
         var optionsKeys = flattenKeys(options);
 
         var missingProperties = requiredKeys.filter(function (k) { return !_.contains(optionsKeys, k); });
