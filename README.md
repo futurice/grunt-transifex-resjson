@@ -171,14 +171,13 @@ grunt tx-create-translation-language:all
 
 ##### Description
 
-Creates a new resource in Transifex. The basename of the file is used as the slug name in Transifex. The optional `--name` option can be used to give the file a more descriptive name used in the Transifex UI.
+Creates a new resource in Transifex. The first parameter is used as the slug name in Transifex and a RESJSON file with the same name and extension `.resjson` is required to be found from the source language directory. Additionally a second parameter can be used to give the file a more descriptive name to be used in the Transifex UI, otherwise the slug name is used.
 
 ##### Usage
 
 ```js
-grunt tx-add-resource --file="<basename-for-resource.resjson>" --name="Display name in Transifex"
+grunt tx-add-resource:<basename-for-resource>:"Additional Display name in Transifex"
 ```
-
 
 #### <span id="tx-push-resources">tx-push-resources</span>
 

@@ -176,48 +176,45 @@ module.exports = function (grunt) {
 
     /*
         Push a new resource file into Transifex.
-        "grunt tx-add-resource --file='123123123.resjson' --name='Name for Transifex UI'"
+        Usage "grunt tx-add-resource:my-resource:'my additional resources'"
         The file is given without path and is assumed to reside at 
         `options.localProject.sourceLangStringsPath`.
     */
-    grunt.registerTask("tx-add-resource", "add a new resource file in Transifex", function () {
+    grunt.registerTask("tx-add-resource", "add a new resource file in Transifex", function (resourceSlug, name) {
         setupTransifexConfig();
         function failAndPrintUsage(errorMessage) {
-            var usageMessage = "Usage: grunt " + grunt.task.current.nameArgs + " --file=12345.resjson [--name='Display name in Transifex']";
+            var usageMessage = "Usage: grunt tx-add-resource:my-resource[:'My Resources']";
             failGruntTask(usageMessage, errorMessage);
         }
  
         var done = this.async();
 
-        var fileOpt = grunt.option("file");
-        var file = SOURCE_LANG_STRINGS_PATH + "/" + fileOpt;
-        var displayName = grunt.option("name");
-
-        if (!fileOpt) {
-            failAndPrintUsage("no --file option defined");
+        if (this.args.length < 1) {
+            failAndPrintUsage("file parameter is required.");
         }
+
+        var file = SOURCE_LANG_STRINGS_PATH + "/" + resourceSlug + ".resjson";
 
         if (!grunt.file.exists(file)) {
-            failAndPrintUsage(file + " doesn't exist");
+            failAndPrintUsage(resourceSlug + ".resjson doesn't exist in " + SOURCE_LANG_STRINGS_PATH +"/");
         }
 
-        if (isIgnoredResource(fileOpt)  && !grunt.option("force")) {
+        if (isIgnoredResource(resourceSlug + ".resjson")  && !grunt.option("force")) {
             failAndPrintUsage(file + " is listed in ignoredResources, use --force to add it anyway");
         }
 
         var jsonContent = rjson.parse(grunt.file.read(file));
-        var slugName = fileOpt.replace(/\.resjson$/, "");
 
-        if (!displayName) {
-            displayName = slugName;
+        if (!name) {
+            name = resourceSlug;
         }
 
         pruneEmptyTranslationStrings(jsonContent);
         pruneOrphanComments(jsonContent);
         var jsonString = JSON.stringify(jsonContent, null, 2);
 
-        txCreateResource(displayName, slugName, jsonString).done(function onSuccess(result) {
-            grunt.log.ok("Uploaded resource " + slugName);
+        txCreateResource(name, resourceSlug, jsonString).done(function onSuccess(result) {
+            grunt.log.ok("Uploaded resource " + resourceSlug);
             done(true);
         }, function onError(result) {
             grunt.log.error("Error while creating resource:", result);
