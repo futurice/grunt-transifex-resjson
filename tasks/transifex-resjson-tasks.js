@@ -9,7 +9,6 @@ module.exports = function (grunt) {
 
     var rjson = require("relaxed-json");
 
-
     /* 
        Constant read from the module configuration file
      */
@@ -21,7 +20,6 @@ module.exports = function (grunt) {
     var TX_TRANSLATION_MODE;
     var STRINGS_PATH;
     var SOURCE_LANG_STRINGS_PATH;
-    var COMMENT_PREAMBLE_FILE;
     var TX_SOURCE_LANGUAGE;
     var IGNORED_RESOURCES;
 
@@ -51,7 +49,6 @@ module.exports = function (grunt) {
       TX_MAIN_RESOURCE_SLUG = transifexConfig.transifex.mainResourceSlug;
       STRINGS_PATH = transifexConfig.localProject.stringsPath;
       SOURCE_LANG_STRINGS_PATH = transifexConfig.localProject.sourceLangStringsPath;
-      COMMENT_PREAMBLE_FILE = transifexConfig.localProject.commentPreambleFile;
       TX_SOURCE_LANGUAGE = transifexConfig.transifex.sourceLanguage;
 
       // optional config options
@@ -102,6 +99,8 @@ module.exports = function (grunt) {
                 createTranslationFile(result);
             });
         }).done(function onSuccess() {
+            // run tx-order-translations with same args as tx-pull-translations
+            grunt.task.run("tx-order-translations" + ((args === undefined) ? "" :  ":" + args));
             done(true);
         }, function onError(err) {
             grunt.log.error(err);
@@ -317,6 +316,37 @@ module.exports = function (grunt) {
             });
     });
 
+    grunt.registerTask("tx-order-translations", "Order translation resource file contents according to the source language resources", function(args) {
+        setupTransifexConfig();
+
+        var resources = getSourceLangResourceFiles();
+        var translations = getTranslationCodes();
+        translations = (args === undefined) ? translations : args.split(/,/);
+
+        var promises = [];
+        _.forEach(resources, function (resource) {
+            _.forEach(translations, function (langCode) {
+
+                var resourceContent = grunt.file.read(SOURCE_LANG_STRINGS_PATH + "/" + resource);
+                var translationFile = STRINGS_PATH + "/" + langCode + "/" + resource;
+
+                if (grunt.file.isFile(translationFile)) {
+                    var translationContent = grunt.file.read(translationFile);
+                    grunt.log.debug("Sorting "+ translationFile);
+                    var sortedTranslation = translateResourceContent(translationContent, resourceContent);
+                    if (sortedTranslation) {
+                        grunt.log.writeln("Rewriting "+ translationFile);
+                        grunt.file.write(translationFile, sortedTranslation);
+                    } else {
+                        grunt.log.warn("Failed to sort " + translationFile);
+                    }
+                } else {
+                    grunt.log.warn("No translation file "+ translationFile);
+                }
+            });
+        });
+    });
+
     /*
      * Helper for sending POST request for creating new Resource in Transifex
      */
@@ -505,15 +535,72 @@ module.exports = function (grunt) {
         return deferred.promise;
     }
 
+
+    /*
+        Create translated version of a resource file by
+        replacing resjson value by translations.
+    */
+    function translateResourceContent(translations, baseContent) {
+        var translatedContent = baseContent;
+        var translationsJSON = rjson.parse(translations);
+
+        Object.keys(translationsJSON).forEach(function(key) {
+            // skip comments
+            if (isComment(key)) {
+                return;
+            }
+            translatedContent = replaceValue(translatedContent, key, JSON.stringify(translationsJSON[key]));
+        });
+
+        return translatedContent;
+    }
+
+    /*
+        Replaces the value for `key` with `replacement`
+     */
+    function replaceValue(strings, key, replacement) {
+        var regexp = new RegExp('("' + key + '\\s*"\\s*:\\s*)".*"', "g");
+        // $1 consists of "key: ", see the regexp abobe
+        replacement = "$1" + replacement;
+        strings = strings.replace(regexp, replacement);
+        return strings;
+    }
+
+    /*
+        Return filenames of all source language resources exlucing ignored files.
+    */
+    function getSourceLangResourceFiles() {
+        var resources = [];
+        grunt.file.recurse(SOURCE_LANG_STRINGS_PATH, function(abspath, rootdir, subdir, filename) {            
+            if (filename.match(/\.resjson$/)) {
+                resources.push(filename);
+            }
+        });
+        return resources;
+    }
+
+    /*
+        Return array of language codes of translations under STRINGS_PATH
+    */
+    function getTranslationCodes() {
+        var translationCodes = [];
+        grunt.file.recurse(STRINGS_PATH, function(abspath, rootdir, subdir, filename) {
+            // treat any non-empty directories that can be mapped to a Transifex language code
+            // as translation directories
+            if (subdir && mapToTxLangCode(subdir) && TX_SOURCE_LANGUAGE !== mapToTxLangCode(subdir)) {                
+                translationCodes.push(subdir);
+            }
+        });
+        return _.uniq(translationCodes);
+    }
+
     /*
         Write translation resource file based on result from Transifex
-        with standard comment at the top and proper BOM markers.
     */
     function createTranslationFile(result) {
         var mappedLangCode = mapFromTxLangCode(result.langCode);
         var path = STRINGS_PATH + "/" + mappedLangCode + "/" + result.resourceSlug + ".resjson";
-        var commentPreamble = grunt.file.read(COMMENT_PREAMBLE_FILE);
-        grunt.file.write(path, commentPreamble + grunt.util.linefeed + result.translations.replace(/^\ufeff/, ""));
+        grunt.file.write(path, result.translations);
         grunt.log.writeln("Wrote resource file for " + result.langCode + " to " + path);
     }
 
@@ -600,7 +687,7 @@ module.exports = function (grunt) {
         /* The expected keys that should be present in the config file */
         var requiredKeys = ["transifex.api", "transifex.auth.user", "transifex.auth.pass", "transifex.projectSlug",
         "transifex.langCoordinators", "transifex.mainResourceSlug", "transifex.sourceLanguage", "localProject.stringsPath",
-        "localProject.sourceLangStringsPath", "localProject.commentPreambleFile"];
+        "localProject.sourceLangStringsPath"];
         var optionsKeys = flattenKeys(options);
 
         var missingProperties = requiredKeys.filter(function (k) { return !_.contains(optionsKeys, k); });

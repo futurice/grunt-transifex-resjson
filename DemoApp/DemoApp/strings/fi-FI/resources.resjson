@@ -1,10 +1,14 @@
-﻿{
-    "paragraph"                : "Veljesten nimet vanhimmasta nuorimpaan ovat: Juhani, Tuomas, Aapo, Simeoni, Timo, Lauri ja Eero. Ovat heistä Tuomas ja Aapo kaksoispari ja samoin Timo ja Lauri. Juhanin, vanhimman veljen, ikä on kaksikymmentä ja viisi vuotta, mutta Eero, nuorin heistä, on tuskin nähnyt kahdeksantoista auringon kierrosta. Ruumiin vartalo heillä on tukeva ja harteva, pituus kohtalainen, paitsi Eeron, joka vielä on kovin lyhyt. Pisin heistä kaikista on Aapo, ehkä ei suinkaan hartevin. Tämä jälkimmäinen etu ja kunnia on Tuomaan, joka oikein on kuuluisa hartioittensa levyyden tähden. Omituisuus, joka heitä kaikkia yhteisesti merkitsee, on heidän ruskea ihonsa ja kankea, hampunkarvainen tukkansa, jonka karheus etenkin Juhanilla on silmään pistävä.",
+﻿// Main resource file containing translatable text strings used in
+// the application.
+{
+    // We can also include inline comments in this file, they
+    // are copied over to the translated resource files as is.
+    "paragraph"                : "Ensimmäinen kappale",
     "_paragraph.comment"       : "Comment for the opening paragraph.",
 
-    "listItem1"                : "Mieleni minun tekevi, aivoni ajattelevi lähteäni laulamahan, saa'ani sanelemahan, sukuvirttä suoltamahan, lajivirttä laulamahan.",
+    "listItem1"                : "Listan ensimmäinen osa.",
     "_listItem1.comment"       : "Comment for the first list item.",
 
-    "listItem2"                : "Veli kulta, veikkoseni, kaunis kasvinkumppalini! Lähe nyt kanssa laulamahan, saa kera sanelemahan yhtehen yhyttyämme, kahta'alta käytyämme!",
+    "listItem2"                : "Tämä on listan toinen osa.",
     "_listItem2.comment"       : "Comment for the first list item."
 }

@@ -37,8 +37,6 @@ Define the configuration file name in `initConfig`:
 
 Setup the configuration file as described in the following section.
 
-Finally, create a preamble file to the location set in the option `commentPreambleFile` of the configuration file. The contents of the file is attached to the start of the resources files generated from RESJSON data downloaded from Transifex.
-
 ### <span id="Configuration file">Configuration file</span>
 
 The tasks provided in `grunt-transifex-resjson` read configuration information from a file located at the root of your Grunt project. The name  of the config file is defined in the `transifex_resjson_config` -property described above.
@@ -111,12 +109,6 @@ The config file contains your Transifex project info for accessing the [Transife
         source language strings
     */
     sourceLangStringsPath: "src/strings/en-US",
-
-    /*
-        File containing additional comments (copyrights, instructions, etc.) you 
-        wish to concatenate to your resources files that are received from Transifex.
-    */
-    commentPreambleFile: "src/strings/comment-preamble.resource",
 
     /*
         Array of file names of resources in the `sourceLangStringsPath` that should be ignored by Transifex. Optional parameter.
