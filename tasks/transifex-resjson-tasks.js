@@ -675,7 +675,7 @@ module.exports = function (grunt) {
         grunt.file.recurse(STRINGS_PATH, function(abspath, rootdir, subdir, filename) {
             // treat any non-empty directories that can be mapped to a Transifex language code
             // as translation directories
-            if (subdir && mapToTxLangCode(subdir) && TX_SOURCE_LANGUAGE !== mapToTxLangCode(subdir)) {                
+            if (subdir && mapToTxLangCode(subdir) && TX_SOURCE_LANGUAGE !== mapToTxLangCode(subdir)) {
                 translationCodes.push(subdir);
             }
         });
@@ -809,20 +809,5 @@ module.exports = function (grunt) {
     function failGruntTask(usageMessage, errorMessage) {
         grunt.log.writeln(usageMessage);
         grunt.fatal(errorMessage);
-    }
-
-    /*
-        Return array of language codes of translations under STRINGS_PATH
-    */
-    function getTranslationCodes() {
-        var translationCodes = [];
-        grunt.file.recurse(STRINGS_PATH, function(abspath, rootdir, subdir, filename) {
-            // treat any non-empty directories that can be mapped to a Transifex language code
-            // as translation directories
-            if (subdir && mapToTxLangCode(subdir) && TX_SOURCE_LANGUAGE !== mapToTxLangCode(subdir)) {                
-                translationCodes.push(subdir);
-            }
-        });
-        return _.uniq(translationCodes);
     }
 };
