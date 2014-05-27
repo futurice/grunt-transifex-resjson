@@ -16,7 +16,6 @@ module.exports = function (grunt) {
     var TX_AUTH; 
     var TX_PROJECT_SLUG; 
     var TX_COORDINATORS;
-    var TX_MAIN_RESOURCE_SLUG;
     var TX_TRANSLATION_MODE;
     var STRINGS_PATH;
     var SOURCE_LANG_STRINGS_PATH;
@@ -46,7 +45,6 @@ module.exports = function (grunt) {
       TX_PROJECT_SLUG = transifexConfig.transifex.projectSlug;
       TX_COORDINATORS = transifexConfig.transifex.langCoordinators;
 
-      TX_MAIN_RESOURCE_SLUG = transifexConfig.transifex.mainResourceSlug;
       STRINGS_PATH = transifexConfig.localProject.stringsPath;
       SOURCE_LANG_STRINGS_PATH = transifexConfig.localProject.sourceLangStringsPath;
       TX_SOURCE_LANGUAGE = transifexConfig.transifex.sourceLanguage;
@@ -176,48 +174,45 @@ module.exports = function (grunt) {
 
     /*
         Push a new resource file into Transifex.
-        "grunt tx-add-resource --file='123123123.resjson' --name='Name for Transifex UI'"
+        Usage "grunt tx-add-resource:my-resource:'my additional resources'"
         The file is given without path and is assumed to reside at 
         `options.localProject.sourceLangStringsPath`.
     */
-    grunt.registerTask("tx-add-resource", "add a new resource file in Transifex", function () {
+    grunt.registerTask("tx-add-resource", "add a new resource file in Transifex", function (resourceSlug, name) {
         setupTransifexConfig();
         function failAndPrintUsage(errorMessage) {
-            var usageMessage = "Usage: grunt " + grunt.task.current.nameArgs + " --file=12345.resjson [--name='Display name in Transifex']";
+            var usageMessage = "Usage: grunt tx-add-resource:my-resource[:'My Resources']";
             failGruntTask(usageMessage, errorMessage);
         }
  
         var done = this.async();
 
-        var fileOpt = grunt.option("file");
-        var file = SOURCE_LANG_STRINGS_PATH + "/" + fileOpt;
-        var displayName = grunt.option("name");
-
-        if (!fileOpt) {
-            failAndPrintUsage("no --file option defined");
+        if (this.args.length < 1) {
+            failAndPrintUsage("file parameter is required.");
         }
+
+        var file = SOURCE_LANG_STRINGS_PATH + "/" + resourceSlug + ".resjson";
 
         if (!grunt.file.exists(file)) {
-            failAndPrintUsage(file + " doesn't exist");
+            failAndPrintUsage(resourceSlug + ".resjson doesn't exist in " + SOURCE_LANG_STRINGS_PATH +"/");
         }
 
-        if (isIgnoredResource(fileOpt)  && !grunt.option("force")) {
+        if (isIgnoredResource(resourceSlug + ".resjson")  && !grunt.option("force")) {
             failAndPrintUsage(file + " is listed in ignoredResources, use --force to add it anyway");
         }
 
         var jsonContent = rjson.parse(grunt.file.read(file));
-        var slugName = fileOpt.replace(/\.resjson$/, "");
 
-        if (!displayName) {
-            displayName = slugName;
+        if (!name) {
+            name = resourceSlug;
         }
 
         pruneEmptyTranslationStrings(jsonContent);
         pruneOrphanComments(jsonContent);
         var jsonString = JSON.stringify(jsonContent, null, 2);
 
-        txCreateResource(displayName, slugName, jsonString).done(function onSuccess(result) {
-            grunt.log.ok("Uploaded resource " + slugName);
+        txCreateResource(name, resourceSlug, jsonString).done(function onSuccess(result) {
+            grunt.log.ok("Uploaded resource " + resourceSlug);
             done(true);
         }, function onError(result) {
             grunt.log.error("Error while creating resource:", result);
@@ -356,34 +351,46 @@ module.exports = function (grunt) {
         });
     });
 
-    grunt.registerTask("tx-add-instruction", "Update developer comment in Transifex for a specific translation key", function () {
+    /*
+        Usage grunt tx-add-instruction:resource-id:key.id:comment
+    */
+    grunt.registerTask("tx-add-instruction", "Update developer comment in Transifex for a specific translation key", function (resource, key, comment) {
         setupTransifexConfig();
 
         function failAndPrintUsage(errorMessage) {
-            var usageMessage = "Usage: " + grunt.task.current.nameArg +
-                " --key=key.id --comment='New multiline comment<br/><br/>With <a href='http://www.google.com'>link to external instructions</a>'";
+            var usageMessage = "Usage: tx-add-instruction:key.id:'comment html snippet'";
             failGruntTask(usageMessage, errorMessage);
         }
 
-        var key = grunt.option("key");
-        var comment = grunt.option("comment");
+        if (this.args.length < 3) {
+            failAndPrintUsage("Invalid parameters.");
+        }
+
+        if (!resource) {
+            failAndPrintUsage("No resource defined.");
+        }
+
+        if (!resourceFileExists(resource)) {
+         failAndPrintUsage("Resource file " + resource + ".resjson not found in " + SOURCE_LANG_STRINGS_PATH);
+        }
 
         if (!key) {
-            failAndPrintUsage("No option key defined.");
+            failAndPrintUsage("No key defined.");
         }
 
         if (!comment) {
-            failAndPrintUsage("No option comment defined.");
+            failAndPrintUsage("No comment defined.");
         }
 
-        grunt.log.writeln("Updating key " + key + " with comment " + comment + " in Transifex");
+        grunt.log.writeln("Updating key " + key + " in resource " + resource + " with comment " + comment + " in Transifex");
         var done = this.async();
-        txUpdateInstruction(TX_MAIN_RESOURCE_SLUG, key, comment)
+        txUpdateInstruction(resource, key, comment)
             .done(function onSuccess(result) {
-                grunt.log.writeln(result);
+                grunt.log.ok("Comment updated in Transifex to "+ comment);
                 done(true);
             }, function onError(err) {
-                grunt.log.writeln("Error: " + err);
+                grunt.log.error(err);
+                grunt.log.writeln("Check that the key "+ key + " exists in "+ resource + ".resjson");
                 done(false);
             });
     });
@@ -771,8 +778,9 @@ module.exports = function (grunt) {
 
         /* The expected keys that should be present in the config file */
         var requiredKeys = ["transifex.api", "transifex.auth.user", "transifex.auth.pass", "transifex.projectSlug",
-        "transifex.langCoordinators", "transifex.mainResourceSlug", "transifex.sourceLanguage", "localProject.stringsPath",
+        "transifex.langCoordinators", "transifex.sourceLanguage", "localProject.stringsPath",
         "localProject.sourceLangStringsPath"];
+
         var optionsKeys = flattenKeys(options);
 
         var missingProperties = requiredKeys.filter(function (k) { return !_.contains(optionsKeys, k); });

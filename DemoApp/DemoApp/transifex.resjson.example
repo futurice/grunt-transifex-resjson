@@ -10,10 +10,6 @@
       // List of transifex users used as coordinators for languages created through the api.
       langCoordinators: ["user"],
 
-      // The slug name for the main resources file. The slug must match the
-      // local file name without the .json file extension.      
-      mainResourceSlug: "resources",
-
       // Source language code in transifex.
       sourceLanguage: "en_US",
     },    
