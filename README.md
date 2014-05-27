@@ -282,4 +282,13 @@ Licensed under the MIT license.
 
 ## Release History
 
-0.1.0 Initial version.
+0.2.0:
+  - Added sample application
+  - Added task `tx-push-translation-key`
+  - Added `ignoredResources` and `translationMode` config options
+  - Removed unecessary config options
+  - Unified parameter passing for tasks
+
+0.1.0:
+  - Initial version
+
