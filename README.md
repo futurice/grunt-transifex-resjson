@@ -127,8 +127,9 @@ The `grunt-transifex-resjson` module provides the following Grunt tasks for inte
 - [tx-push-resources](#tx-push-resources)
 - [tx-create-translation-language](#tx-create-translation-language)
 - [tx-add-resource](#tx-add-resource)
+- [tx-push-translations](#tx-push-translations)
+- [tx-push-translation-key](#tx-push-translation-key)
 - [tx-add-instruction](#tx-add-instruction)
-
 
 #### <span id="tx-project-resources">tx-project-resources</span>
 
@@ -224,6 +225,7 @@ Upload local translation files to Transifex. The task can be given a list of lan
 
 The language codes used as arguments are those used in the local project as directory names, i.e. **not** Transifex language codes.
 
+Any existing translations for the uploaded data are overwritten in Transifex in the process.
 
 ##### Usage
 
@@ -238,6 +240,30 @@ or to upload specific translations:
 grunt tx-push-translations:fi-FI,es-ES
 ```
 
+
+#### <span id="tx-push-translation-key">tx-push-translation-key</span>
+
+##### Description
+
+Push translation for a single key of a single resource file for specified languages to Transifex. By default the key is updated for all languages. The resource without file-extension is specified as the first parameter, the key to update as second and optionally a comma separated list of language codes as the third parameter. 
+
+The language codes used as parameters are those used in the local project as directory names, i.e. **not** Transifex language codes.
+
+Any existing translations for the key in Transifex are overwritten in the process.
+
+##### Usage
+
+Upload the translations for all languages of the specified key `key.id` of resource `my-resource` to Transifex.
+
+```js
+grunt tx-push-translation-key:my-resource:key.id
+```
+
+Add the 3rd parameter to limit uploading the translations for only specified languages:
+
+```js
+grunt tx-push-translation-key:resource:key.id:fi-FI,es-ES
+```
 
 #### <span id="tx-add-instruction">tx-add-instruction</span>
 
