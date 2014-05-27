@@ -247,6 +247,11 @@ module.exports = function (grunt) {
             failAndPrintUsage("No translation key and resource defined");
         }
 
+        if (!resourceFileExists(resource)) {
+            done(false);
+            grunt.fail.fatal("No resource file " + resource + ".resjson found");
+        }
+
         var langCodes;
         if (arguments.length === 3) {
             langCodes = langs.split(/,/);
@@ -256,8 +261,8 @@ module.exports = function (grunt) {
 
         var translations = [];
         var fileRegExp = new RegExp("^" + resource + "\\.resjson");
-        grunt.file.recurse(STRINGS_PATH, function (abspath, rootdir, subdir, filename) {            
-            if (filename.match(fileRegExp) && !isIgnoredResource(filename) && _.contains(langCodes, subdir)) {   
+        grunt.file.recurse(STRINGS_PATH, function (abspath, rootdir, subdir, filename) {
+            if (filename.match(fileRegExp) && !isIgnoredResource(filename) && _.contains(langCodes, subdir)) {
                 var jsonContent = rjson.parse(grunt.file.read(abspath));
                 if (jsonContent[key]) {
                     translations.push({
@@ -269,6 +274,11 @@ module.exports = function (grunt) {
                 }
             }
         });
+
+        if (_.isEmpty(translations)) {
+            done(false);
+            grunt.fail.fatal("No keys for " + key + " found");
+        }
 
         var taskResult = true;
         var promises = translations.map(txPushSingleTranslation);
@@ -648,6 +658,10 @@ module.exports = function (grunt) {
 
     function isIgnoredResource(filename) {
         return _.contains(IGNORED_RESOURCES, filename);
+    }
+
+    function resourceFileExists(resource) {
+        return grunt.file.isFile(SOURCE_LANG_STRINGS_PATH + "/" + resource + ".resjson");
     }
 
     /* 
