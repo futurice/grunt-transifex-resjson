@@ -2,9 +2,9 @@
 
 Grunt tasks for managing RESJSON resource files in [Transifex](https://www.transifex.com/). 
 
-These tasks have been developed to interact with the Transifex API in a Windows Store Javascript app project where RESJSON resource files are used for handling different translations. 
+These tasks have been developed to interact with the Transifex API in a Windows Store JavaScript app project where RESJSON resource files are used for handling different translations. 
 
-See the [MSISDN](http://msdn.microsoft.com/en-us/library/windows/apps/hh465254.aspx) for details about using RESJSON in Javascript apps.
+See the [MSDN](http://msdn.microsoft.com/en-us/library/windows/apps/hh465254.aspx) for details about using RESJSON in JavaScript apps.
 
 ## Getting Started
 This plugin requires Grunt `~0.4.3`
