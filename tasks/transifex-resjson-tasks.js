@@ -25,19 +25,20 @@ module.exports = function (grunt) {
     var transifexConfig;
 
     function setupTransifexConfig() {
-
       var configFile = grunt.config("transifex-resjson.transifex_resjson_config");
 
-      if (!configFile) {
-        grunt.fail.warn("no 'transifex_resjson_config' property set");
+      var data;
+      if (configFile) {
+        try {
+          data = rjson.parse(grunt.file.read(configFile), {
+            relaxed: true,
+            warnings: true
+          });
+        } catch(e) {
+          grunt.fail.warn("could not find config file for transifex-resjson");
+        }
       }
-
-
-      try {
-        transifexConfig = readConfigs(configFile);
-      } catch(e) {
-        grunt.fail.warn("could not find config file for transifex-resjson");
-      }
+      transifexConfig = resolveConfig(data);
 
       TX_API = transifexConfig.transifex.api;
       TX_AUTH = transifexConfig.transifex.auth;
@@ -767,27 +768,44 @@ module.exports = function (grunt) {
         return crypto.createHash("md5").update(translationKey + ":").digest("hex");
     }
 
-    /*
-       Read Transifex specific configs
-    */
-    function readConfigs(filePath) {
-        var options = rjson.parse(grunt.file.read(filePath), {
-            relaxed: true,
-            warnings: true,
-        });
+    /* The expected keys that should be present in the config file or in the command line args */
+    var requiredKeys = ["transifex.api", "transifex.auth.user", "transifex.auth.pass", "transifex.projectSlug",
+    "transifex.langCoordinators", "transifex.sourceLanguage", "localProject.stringsPath",
+    "localProject.sourceLangStringsPath"];
 
-        /* The expected keys that should be present in the config file */
-        var requiredKeys = ["transifex.api", "transifex.auth.user", "transifex.auth.pass", "transifex.projectSlug",
-        "transifex.langCoordinators", "transifex.sourceLanguage", "localProject.stringsPath",
-        "localProject.sourceLangStringsPath"];
+    /*
+     Resolve Transifex config. Will overwrite the provided 'currentData' with config provided from the command line, if provided.
+     */
+    function resolveConfig(currentData) {
+        var options = currentData || {};
+        resolveCommandLineData(options);
 
         var optionsKeys = flattenKeys(options);
 
         var missingProperties = requiredKeys.filter(function (k) { return !_.contains(optionsKeys, k); });
         if (!_.isEmpty(missingProperties)) {
-            grunt.fatal("missing option(s) from the config file " + filePath + ": " + missingProperties.join(", "));
+            grunt.fatal("missing option(s): " + missingProperties.join(", "));
         }
         return options;
+    }
+
+    function setProperty(data, key, value) {
+        var split = key.split(".");
+        if (split.length === 1) {
+            data[split[0]] = value;
+        } else {
+            data[split[0]] = data[split[0]] || {};
+            setProperty(data[split[0]], key.slice(split[0].length + 1), value);
+        }
+    }
+
+    function resolveCommandLineData(data) {
+        _.each(requiredKeys, function (requiredKey) {
+            var option = grunt.option(requiredKey);
+            if (option) {
+                setProperty(data, requiredKey, option);
+            }
+        });
     }
 
     /*
