@@ -4,7 +4,7 @@ module.exports = function (grunt) {
     var request = require("request");
     var crypto = require("crypto");
 
-    var _ = require("underscore");
+    var _ = require("lodash");
     var q = require("q");
 
     var rjson = require("relaxed-json");
@@ -24,7 +24,7 @@ module.exports = function (grunt) {
 
     var transifexConfig;
 
-    function setupTransifexConfig() {
+    function setupTransifexConfig(options) {
       var configFile = grunt.config("transifex-resjson.transifex_resjson_config");
 
       var data;
@@ -38,7 +38,7 @@ module.exports = function (grunt) {
           grunt.fail.warn("could not find config file for transifex-resjson");
         }
       }
-      transifexConfig = resolveConfig(data);
+      transifexConfig = resolveConfig(data, options);
 
       TX_API = transifexConfig.transifex.api;
       TX_AUTH = transifexConfig.transifex.auth;
@@ -56,7 +56,7 @@ module.exports = function (grunt) {
     }
 
     grunt.registerTask("tx-project-resources", "Get project status from Transifex", function () {
-        setupTransifexConfig();
+        setupTransifexConfig(this.options());
 
         var action = TX_API + "/project/" + TX_PROJECT_SLUG + "/resources/";
 
@@ -84,7 +84,7 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask("tx-pull-translations", "Fetch translation files with reviewed translations from Transifex", function (args) {
-        setupTransifexConfig();
+        setupTransifexConfig(this.options());
         var done = this.async();
 
         var langCodes = (args === undefined) ? [] : args.split(/,/).map(mapToTxLangCode);
@@ -108,7 +108,7 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask("tx-push-resources", "Push all the resources from the source language directory to Transifex", function () {
-        setupTransifexConfig();
+        setupTransifexConfig(this.options());
         var done = this.async();
 
         var resources = [];
@@ -142,7 +142,7 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask("tx-create-translation-language", "Provisions language to Transifex project", function (lang) {
-        setupTransifexConfig();
+        setupTransifexConfig(this.options());
         var done = this.async();
 
         var langCodes = [];
@@ -180,7 +180,7 @@ module.exports = function (grunt) {
         `options.localProject.sourceLangStringsPath`.
     */
     grunt.registerTask("tx-add-resource", "add a new resource file in Transifex", function (resourceSlug, name) {
-        setupTransifexConfig();
+        setupTransifexConfig(this.options());
         function failAndPrintUsage(errorMessage) {
             var usageMessage = "Usage: grunt tx-add-resource:my-resource[:'My Resources']";
             failGruntTask(usageMessage, errorMessage);
@@ -229,7 +229,7 @@ module.exports = function (grunt) {
      * E.g. grunt tx.push-translation-key:resource:some.key:fi-FI,jp-JP
      */
     grunt.registerTask("tx-push-translation-key", "push single translation key to Transifex", function(resource, key, langs) {
-        setupTransifexConfig();
+        setupTransifexConfig(this.options());
 
         function failAndPrintUsage(errorMessage) {
             var usageMessage = "Usage: tx-push-translation-key:key.to.update:resource:[:list of languages]";
@@ -297,7 +297,7 @@ module.exports = function (grunt) {
      *  Push translation files, i.e. all resource files except for the source language, to Transifex.
      */
     grunt.registerTask("tx-push-translations", "push translations to Transifex", function (lang) {
-        setupTransifexConfig();
+        setupTransifexConfig(this.options());
 
         var done = this.async();
 
@@ -356,7 +356,7 @@ module.exports = function (grunt) {
         Usage grunt tx-add-instruction:resource-id:key.id:comment
     */
     grunt.registerTask("tx-add-instruction", "Update developer comment in Transifex for a specific translation key", function (resource, key, comment) {
-        setupTransifexConfig();
+        setupTransifexConfig(this.options());
 
         function failAndPrintUsage(errorMessage) {
             var usageMessage = "Usage: tx-add-instruction:key.id:'comment html snippet'";
@@ -397,7 +397,7 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask("tx-order-translations", "Order translation resource file contents according to the source language resources", function(args) {
-        setupTransifexConfig();
+        setupTransifexConfig(this.options());
 
         var resources = getSourceLangResourceFiles();
         var translations = getTranslationCodes();
@@ -774,38 +774,18 @@ module.exports = function (grunt) {
     "localProject.sourceLangStringsPath"];
 
     /*
-     Resolve Transifex config. Will overwrite the provided 'currentData' with config provided from the command line, if provided.
+     Resolve Transifex config. Will overwrite the provided 'currentData' with options defined in the task config
      */
-    function resolveConfig(currentData) {
-        var options = currentData || {};
-        resolveCommandLineData(options);
+    function resolveConfig(currentData, options) {
+        var data = _.merge({}, currentData , options);
 
-        var optionsKeys = flattenKeys(options);
+        var optionsKeys = flattenKeys(data);
 
         var missingProperties = requiredKeys.filter(function (k) { return !_.contains(optionsKeys, k); });
         if (!_.isEmpty(missingProperties)) {
             grunt.fatal("missing option(s): " + missingProperties.join(", "));
         }
-        return options;
-    }
-
-    function setProperty(data, key, value) {
-        var split = key.split(".");
-        if (split.length === 1) {
-            data[split[0]] = value;
-        } else {
-            data[split[0]] = data[split[0]] || {};
-            setProperty(data[split[0]], key.slice(split[0].length + 1), value);
-        }
-    }
-
-    function resolveCommandLineData(data) {
-        _.each(requiredKeys, function (requiredKey) {
-            var option = grunt.option(requiredKey);
-            if (option) {
-                setProperty(data, requiredKey, option);
-            }
-        });
+        return data;
     }
 
     /*
