@@ -17,7 +17,7 @@
     */
     auth: {
       user: "yourtransifexuser",
-      pass: "anditspassword",
+      pass: "anditspassword"
     },
 
     projectSlug: "transifex-projectslug",
@@ -42,7 +42,7 @@
         See: http://docs.transifex.com/developer/api/translations for details
         about the mode parameter.
     */
-    translationMode: "reviewed",
+    translationMode: "reviewed"
   },
   /*
         Settings for your local project
