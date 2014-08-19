@@ -112,6 +112,25 @@ The config file contains your Transifex project info for accessing the [Transife
 }
 ```
 
+#### <span id="Configuring via Grunt">Configuring via Grunt</span>
+
+It is also possible to configure individual tasks via your Gruntfile by defining `options` for a task provided by the module. Options set for tasks override configs defined in the Transifex configuration file. E.g. you can make sensitive data to be passable via command line by using the `grunt.option`:
+
+```js
+    ...
+    'tx-project-resources': {
+      options: {
+        transifex : {
+          auth: {
+            user: grunt.option("user"),
+            pass: grunt.option("pass")
+          }
+        }
+      }
+    },
+    ...
+```
+
 ### Provided Grunt Tasks and Usage
 
 The `grunt-transifex-resjson` module provides the following Grunt tasks for interacting with your Transifex repository:
@@ -281,6 +300,9 @@ grunt tx-add-instruction:extra-resources:my.little.key.id:'<strong>Important!</s
 Licensed under the MIT license.
 
 ## Release History
+
+0.3.0:
+  - Added possibility to read configurations via cmd line
 
 0.2.0:
   - Added sample application

@@ -1,12 +1,26 @@
 {
   "name": "grunt-transifex-resjson",
   "description": "Grunt tasks for managing RESJSON resource files in Transifex",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "homepage": "https://github.com/futurice/grunt-transifex-resjson",
   "author": {
     "name": "Teemu Sidoroff",
     "email": "teemu.sidoroff@futurice.com"
   },
+  "contributors": [
+    {
+      "name": "Antti Sykäri <antti.sykari@futurice.com>"
+    },
+    {
+      "name": "Harri Hälikkä <harri.halikka@futurice.com>"
+    },
+    {
+      "name": "Kiia Korpi <kiia.korpi@futurice.com>"
+    },
+    {
+      "name": "Kayne Barclay <kbarclay@atlassian.com>"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/futurice/grunt-transifex-resjson"
