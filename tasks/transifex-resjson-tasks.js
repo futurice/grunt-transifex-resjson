@@ -768,11 +768,6 @@ module.exports = function (grunt) {
         return crypto.createHash("md5").update(translationKey + ":").digest("hex");
     }
 
-    /* The expected keys that should be present in the config file or in the command line args */
-    var requiredKeys = ["transifex.api", "transifex.auth.user", "transifex.auth.pass", "transifex.projectSlug",
-    "transifex.langCoordinators", "transifex.sourceLanguage", "localProject.stringsPath",
-    "localProject.sourceLangStringsPath"];
-
     /*
      Resolve Transifex config. Will overwrite the provided 'currentData' with options defined in the task config
      */
@@ -780,6 +775,11 @@ module.exports = function (grunt) {
         var data = _.merge({}, currentData , options);
 
         var optionsKeys = flattenKeys(data);
+
+        /* The expected keys that should be present in the config file or in the command line args */
+        var requiredKeys = ["transifex.api", "transifex.auth.user", "transifex.auth.pass", "transifex.projectSlug",
+            "transifex.langCoordinators", "transifex.sourceLanguage", "localProject.stringsPath",
+            "localProject.sourceLangStringsPath"];
 
         var missingProperties = requiredKeys.filter(function (k) { return !_.contains(optionsKeys, k); });
         if (!_.isEmpty(missingProperties)) {
