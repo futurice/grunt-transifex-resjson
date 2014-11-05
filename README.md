@@ -85,8 +85,6 @@ The config file contains your Transifex project info for accessing the [Transife
     */
     translationMode: "reviewed",
   },
-
-  },
   /*
      Settings for your local project 
   */
