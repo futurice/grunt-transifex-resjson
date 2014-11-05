@@ -59,7 +59,7 @@ The config file contains your Transifex project info for accessing the [Transife
     */
     auth: {
       user: "yourtransifexuser",
-      pass: "anditspassword",
+      pass: "anditspassword"
     },
 
     projectSlug: "transifex-projectslug",
