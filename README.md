@@ -299,6 +299,10 @@ Licensed under the MIT license.
 
 ## Release History
 
+0.3.1:
+  - Fix handling of sr-Latn
+  - Fix typoes in documentation
+
 0.3.0:
   - Added possibility to read configurations via cmd line
 
