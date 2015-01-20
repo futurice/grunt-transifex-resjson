@@ -722,7 +722,7 @@ module.exports = function (grunt) {
     function mapToTxLangCode(str) {
         var matcher = str.match(/([a-z]{2})-([A-Z]{2}|latn)$/i);
         if (matcher && matcher.length === 3) {
-            if (matcher[2] === "latn" || matcher[2] === "Latn") {
+            if (_.isString(matcher[2]) && matcher[2].toLowerCase() === "latn") {
                 return matcher[1] + "@latin";
             } else {
                 return matcher[0].replace("-", "_");
