@@ -720,7 +720,7 @@ module.exports = function (grunt) {
         undefined if the code isn't of correct format.
     */
     function mapToTxLangCode(str) {
-        var matcher = str.match(/([a-z]{2})-([A-Z]{2}|latn)$/i);
+        var matcher = str.match(/([a-z]{2,3})(?:-([a-z]{2}|latn))?$/i);
         if (matcher && matcher.length === 3) {
             if (_.isString(matcher[2]) && matcher[2].toLowerCase() === "latn") {
                 return matcher[1] + "@latin";
