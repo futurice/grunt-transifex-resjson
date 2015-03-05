@@ -299,6 +299,9 @@ Licensed under the MIT license.
 
 ## Release History
 
+0.3.2:
+  - Allow using shorter ISO 639-1 style language codes
+
 0.3.1:
   - Fix handling of sr-Latn
   - Fix typoes in documentation
