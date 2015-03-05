@@ -151,7 +151,7 @@ module.exports = function (grunt) {
             done(false);
         } else if (lang === "all") {
             //get all languages from the strings folder except for the source language and
-            //map the lang codes from xx-YY to xx_YY before creating the language
+            //map them from local form to Transifex language code before creating the language
             var subDirectories = grunt.file.expand(STRINGS_PATH + "/*");
             _.forEach(subDirectories, function (dirname) {
                 if (grunt.file.isDir(dirname)) {
@@ -716,7 +716,7 @@ module.exports = function (grunt) {
     }
 
     /*
-        Return language code understood by transifex, or
+        Return language code understood by Transifex, or
         undefined if the code isn't of correct format.
     */
     function mapToTxLangCode(str) {
