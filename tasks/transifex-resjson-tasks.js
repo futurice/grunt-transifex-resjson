@@ -656,7 +656,7 @@ module.exports = function (grunt) {
     }
 
     /*
-        Return filenames of all source language resources exlucing ignored files.
+        Return filenames of all source language resources.
     */
     function getSourceLangResourceFiles() {
         var resources = [];
@@ -748,7 +748,10 @@ module.exports = function (grunt) {
     }
 
     function getKeyForComment(str) {
-        return str.match(/^_(.*)\.comment$/)[1];
+        var m = str.match(/^_(.*)\.comment$/);
+        if (m) {
+            return m[1];
+        }
     }
 
     function isIgnoredResource(filename) {
