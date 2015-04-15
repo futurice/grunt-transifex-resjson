@@ -299,6 +299,9 @@ Licensed under the MIT license.
 
 ## Release History
 
+0.3.3:
+  - Do not crash on malformed comment keys in resjson
+
 0.3.2:
   - Allow using shorter ISO 639-1 style language codes
 
