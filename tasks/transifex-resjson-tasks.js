@@ -10,7 +10,7 @@ module.exports = function (grunt) {
     var rjson = require("relaxed-json");
 
     /* 
-       Constant read from the module configuration file
+       Constants read from the module configuration file
      */
     var TX_API;
     var TX_AUTH; 
@@ -226,13 +226,13 @@ module.exports = function (grunt) {
      * Push a single translation key to Transifex. The key is given as the first argument and optionally a list
      * of languages to update as the second argument.
      *
-     * E.g. grunt tx.push-translation-key:resource:some.key:fi-FI,jp-JP
+     * E.g. grunt tx-push-translation-key:resource-slug:some.key:fi-FI,jp-JP
      */
     grunt.registerTask("tx-push-translation-key", "push single translation key to Transifex", function(resource, key, langs) {
         setupTransifexConfig(this.options());
 
         function failAndPrintUsage(errorMessage) {
-            var usageMessage = "Usage: tx-push-translation-key:key.to.update:resource:[:list of languages]";
+            var usageMessage = "Usage: tx-push-translation-key:resource-slug:key.to.update[:list of languages]";
             failGruntTask(usageMessage, errorMessage);
         }
 
@@ -656,7 +656,7 @@ module.exports = function (grunt) {
     }
 
     /*
-        Return filenames of all source language resources exlucing ignored files.
+        Return filenames of all source language resources.
     */
     function getSourceLangResourceFiles() {
         var resources = [];
@@ -748,7 +748,10 @@ module.exports = function (grunt) {
     }
 
     function getKeyForComment(str) {
-        return str.match(/^_(.*)\.comment$/)[1];
+        var m = str.match(/^_(.*)\.comment$/);
+        if (m) {
+            return m[1];
+        }
     }
 
     function isIgnoredResource(filename) {
