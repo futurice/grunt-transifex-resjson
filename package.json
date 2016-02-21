@@ -9,10 +9,10 @@
   },
   "contributors": [
     {
-      "name": "Antti Sykäri <antti.sykari@futurice.com>"
+      "name": "Antti Sykï¿½ri <antti.sykari@futurice.com>"
     },
     {
-      "name": "Harri Hälikkä <harri.halikka@futurice.com>"
+      "name": "Harri Hï¿½likkï¿½ <harri.halikka@futurice.com>"
     },
     {
       "name": "Kiia Korpi <kiia.korpi@futurice.com>"
@@ -21,7 +21,7 @@
       "name": "Kayne Barclay <kbarclay@atlassian.com>"
     },
     {
-      "name": "Rémy Coutable <remy@rymai.me>"
+      "name": "Rï¿½my Coutable <remy@rymai.me>"
     }
   ],
   "repository": {
@@ -52,7 +52,7 @@
     "grunt": "~0.4.3"
   },
   "peerDependencies": {
-    "grunt": "~0.4.3"
+    "grunt": ">=0.4.0"
   },
   "keywords": [
     "gruntplugin",
